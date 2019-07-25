@@ -1,4 +1,4 @@
-" Use Vim settings, rather than Vi settings
+" Use Vim settings, rather than Vi settings. This must be first.
 set nocompatible
 
 " ============================== General Config ================================
@@ -41,6 +41,13 @@ nnoremap <C-y> 3<C-y>
 
 autocmd FocusLost * silent! wa " Save when focus lost
 autocmd VimResized * wincmd =  " Resize splits when resizing window
+
+" =============================== Local Settings ===============================
+
+try
+  source ~/.vim/vimrc.local
+catch
+endtry
 
 " ============================== Persistent Undo ===============================
 " Keep undo history across sessions by storing in a file.
