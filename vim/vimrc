@@ -1,0 +1,217 @@
+" Use Vim settings, rather than Vi settings
+set nocompatible
+
+" ============================== General Config ================================
+
+set number                     " Show line numbers
+set backspace=indent,eol,start " Allow backspace in insert mode
+set history=1000               " Store lots of :cmdline history
+set showcmd                    " Show incomplete cmds at bottom
+set showmode                   " Show current mode at bottom
+set visualbell                 " No sounds
+set autoread                   " Reload files changed outside vim
+set hlsearch                   " highlight matches
+set incsearch                  " incremental search
+set noswapfile                 " no swapfiles
+set nobackup                   " no backups
+set nowb                       " no write backup
+set shortmess+=c               " don't give |ins-completion-menu| messages
+set signcolumn=yes             " always show signcolumns
+set cmdheight=2                " more space for messages
+
+" This makes vim act like all other editors. Buffers can exist in
+" the background without being in a window.
+set hidden
+
+syntax on                      " turn on syntax highlighting
+filetype on                    " enable filetype detection
+filetype plugin on             " filetype specific plugins
+filetype indent on             " filetype specific indentation
+
+set wildmode=list:longest      " show all completion candidates
+set guioptions-=T              " remove toolbar
+set title                      " set the title of the terminal
+set scrolloff=5                " keep 5 lines around the cursor
+
+let mapleader = ","            " Set , as the leader key
+
+" Remap <C-e> and <C-y> to move by three lines
+nnoremap <C-e> 3<C-e>
+nnoremap <C-y> 3<C-y>
+
+autocmd FocusLost * silent! wa " Save when focus lost
+autocmd VimResized * wincmd =  " Resize splits when resizing window
+
+" ============================== Persistent Undo ===============================
+" Keep undo history across sessions by storing in a file.
+if has('persistent_undo')
+  silent !mkdir ~/.vim/backups > /dev/null 2>&1
+  set undodir=~/.vim/backups
+  set undofile
+endif
+
+" ================================= Nerd Tree ==================================
+" From
+" https://medium.com/@victormours/a-better-nerdtree-setup-3d3921abc0b9
+"
+nnoremap <Leader>f :NERDTreeToggle<Enter>
+nnoremap <silent> <Leader>v :NERDTreeFind<CR>
+let NERDTreeQuitOnOpen = 1
+let NERDTreeAutoDeleteBuffer = 1
+let NERDTreeMinimalUI = 1
+let NERDTreeDirArrows = 1
+
+" ================================ Indentation =================================
+
+set autoindent
+set smartindent
+set smarttab
+set shiftwidth=2
+set softtabstop=2
+set tabstop=2
+set expandtab
+
+" ================================== Plugins ===================================
+" Specify a directory for plugins
+call plug#begin('~/.vim/plugins_dir')
+
+Plug 'vim-scripts/Zenburn'                         " zenburn color theme
+
+" Navigation Plugins
+Plug 'scrooloose/nerdtree'                         " nerdtree
+Plug 'Xuyuanp/nerdtree-git-plugin'                 " git-status in nerdtree
+Plug 'yegappan/mru'                                " most-recently-used files
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'                            " fuzzy-finedr
+Plug 'ctrlpvim/ctrlp.vim'                          " ctrl-p navigation
+Plug 'nixprime/cpsm'                               " better search for ctrl-p
+
+" Editing Plugins
+Plug 'ntpeters/vim-better-whitespace'              " higlight whitespace
+Plug 'jiangmiao/auto-pairs'                        " pair parens/brackets/etc.
+Plug 'vim-scripts/CursorLineCurrentWindow'         " highlight current line
+Plug 'wincent/terminus'                            " cursor indicating mode
+
+" Coding
+Plug 'tpope/vim-fugitive'                          " git plugin
+Plug 'janko-m/vim-test'                            " run tests
+Plug 'neoclide/coc.nvim', { 'branch': 'release' }  " language-server plugin
+
+" Coding (Scala)
+Plug 'derekwyatt/vim-scala'
+
+" Coding (PlantUML)
+Plug 'aklt/plantuml-syntax'                        " plantuml syntax highlighting
+
+call plug#end()
+
+" =================================== Theme ====================================
+
+if has("gui_running")
+  set t_Co=256                           " tell the terminal it has 256 colors
+end
+
+color zenburn
+set cursorline
+
+" ==================================== Misc ====================================
+
+" Enable ripgrep if available
+if executable('rg')
+  set grepprg=rg\ --vimgrep\ --no-heading
+  set grepformat=%f:%1:%m
+endif
+
+" grep word at point
+nnoremap <Leader>g :grep! "\b<C-R><C-W>\b"<CR>:cw<CR><CR> 
+
+" Configure j/k to move normally between wrapped lines
+nmap j gj
+nmap k gk
+
+" Configure Ctrl-P to use cpsm
+let g:ctrlp_match_func = {'match': 'cpsm#CtrlPMatch'}
+
+" ==================================== Tabs ====================================
+
+if has("gui_running")
+  " Show tab number (useful for Cmd-1, Cmd-2.. mapping)
+  autocmd VimEnter * set guitablabel=%N:\ %t\ %M
+
+  noremap <C-Tab> :tabnext<CR>
+  noremap <C-S-Tab> :tabprev<CR>
+
+  noremap <D-1> :tabn 1<CR>
+  noremap <D-2> :tabn 2<CR>
+  noremap <D-3> :tabn 3<CR>
+  noremap <D-4> :tabn 4<CR>
+  noremap <D-5> :tabn 5<CR>
+  noremap <D-6> :tabn 6<CR>
+  noremap <D-7> :tabn 7<CR>
+  noremap <D-8> :tabn 8<CR>
+  noremap <D-9> :tabn 9<CR>
+  noremap <D-0> :tablast<CR>
+end
+
+" ================================== Wrapping ==================================
+
+set nowrap                     " Do not wrap lines
+set linebreak                  " Break lines at good points
+autocmd BufReadPre,FileReadPre *.md :set wrap " Enable wrapping in *.md files
+
+" ============================ COC (language server) ===========================
+
+" Use `[c` and `]c` to navigate diagnostics
+nmap <silent> [c <Plug>(coc-diagnostic-prev)
+nmap <silent> ]c <Plug>(coc-diagnsotic-next)
+
+" Remap keys for gotos
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+" Remap fdo codeAction of current line
+nmap <leader>ac <Plug>(coc-codeaction)
+
+" Remap for doing the format action
+nnoremap <silent> F :call CocAction('format')<CR>
+
+" Remap K for showing documentation in preview window
+nnoremap <silent> K :call <SID>show_documentation()<CR>
+function! s:show_documentation()
+  if &filetype == 'vim'
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
+
+" Highlight symbol under cursor on CursorHold
+autocmd CursorHold * silent call CocActionAsync('highlight')
+
+" Remap for rename current word
+nmap <leader>rn <Plug>(coc-rename)
+
+" <leader>a - Show all diagnostics
+nnoremap <silent> <leader>a  :<C-u>CocList diagnostics<cr>
+" <leader>o - Show outline of current document
+nnoremap <silent> <leader>o  :<C-u>CocList outline<cr>
+" <leader>s - Search workspace symbols
+nnoremap <silent> <leader>s  :<C-u>CocList -I symbols<cr>
+" <leader>j - Default action for next item
+nnoremap <silent> <leader>j  :<C-u>CocNext<CR>
+" <leader>k - Default action for previous item.
+nnoremap <silent> <leader>k  :<C-u>CocPrev<CR>
+" <leader>p - Resume latest coc list.
+nnoremap <silent> <leader>p  :<C-u>CocListResume<CR>
+
+" =============================== Configure Pairs ==============================
+
+" No pairs in vimrc files
+au Filetype vim let b:AutoPairs = {'(':')', "'": "'", '`':'`'}
+
+" ================================= Other Files ================================
+source ~/.vim/font.vim
+
+source ~/.vim/scala.vim
