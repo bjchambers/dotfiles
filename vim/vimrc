@@ -75,7 +75,8 @@ set expandtab
 " Specify a directory for plugins
 call plug#begin('~/.vim/plugins_dir')
 
-Plug 'vim-scripts/Zenburn'                         " zenburn color theme
+Plug 'tomasiser/vim-code-dark'                     " color theme
+Plug 'vim-airline/vim-airline'                     " improved mode line
 
 " Navigation Plugins
 Plug 'scrooloose/nerdtree'                         " nerdtree
@@ -111,8 +112,9 @@ if has("gui_running")
   set t_Co=256                           " tell the terminal it has 256 colors
 end
 
-color zenburn
-set cursorline
+colorscheme codedark                     " enable codedark theme
+let g:airline_theme = 'codedark'         " use codedark for airline as well
+set cursorline                           " highlight current line
 
 " ==================================== Misc ====================================
 
@@ -123,7 +125,7 @@ if executable('rg')
 endif
 
 " grep word at point
-nnoremap <Leader>g :grep! "\b<C-R><C-W>\b"<CR>:cw<CR><CR> 
+nnoremap <Leader>g :grep! "\b<C-R><C-W>\b"<CR>:cw<CR><CR>
 
 " Configure j/k to move normally between wrapped lines
 nmap j gj
