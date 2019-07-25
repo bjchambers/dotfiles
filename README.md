@@ -27,3 +27,9 @@ sudo apt install cmake libboost-all-dev python-dev libicu-dev
 cd ~/.vim/plugins_dir/cpsm
 ./install.sh
 ```
+
+## TODO
+
+- [Window Management](https://advancedweb.hu/2018/05/15/vim-navigation/)
+- [Persistent Undo](https://advancedweb.hu/2017/09/19/vim-persistent-undo/)
+- [Clipboard](https://advancedweb.hu/2018/06/12/vim-system-clipboard/)
