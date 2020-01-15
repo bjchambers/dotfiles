@@ -4,8 +4,14 @@ Clone the repository into your user directory:
 
 ```shell
 git clone https://github.com/bjchambers/dotfiles.git ~/dotfiles --recurse-submodule
+
+# For vim
 mv ~/.vim ~/.vim.bak
 ln -s ~/dotfiles/vim ~/.vim
+
+# For emacs
+mv ~/.emacs.d ~/.emacs.d.bak
+ln -s ~/dotfiles/emacs ~/.emacs.d
 ```
 
 # Setup vimrc
