@@ -3,7 +3,7 @@
 Clone the repository into your user directory:
 
 ```shell
-git clone https://github.com/bjchambers/dotfiles.git ~/dotfiles --recurse-submodules
+git clone https://github.com/bjchambers/dotfiles.git ~/dotfiles --recurse-submodule
 mv ~/.vim ~/.vim.bak
 ln -s ~/dotfiles/vim ~/.vim
 ```
