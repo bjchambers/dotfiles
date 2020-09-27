@@ -1,0 +1,1 @@
+- Use `const` in place of `let` where appropriate

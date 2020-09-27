@@ -1,0 +1,605 @@
+" Use Vim settings, rather than Vi settings. This must be first.
+set nocompatible
+
+" ================================== Plugins ===================================
+" Specify a directory for plugins
+call plug#begin('~/.vim/plugins_dir')
+
+Plug 'tomasiser/vim-code-dark'                     " color theme
+Plug 'vim-airline/vim-airline'                     " improved mode line
+
+" Navigation Plugins
+Plug 'scrooloose/nerdtree'                         " nerdtree
+Plug 'Xuyuanp/nerdtree-git-plugin'                 " git-status in nerdtree
+Plug 'yegappan/mru'                                " most-recently-used files
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'                            " fuzzy-finder
+Plug 'ctrlpvim/ctrlp.vim'                          " ctrl-p navigation
+Plug 'rhysd/clever-f.vim'                          " improved f, F, t, T
+Plug 'terryma/vim-smooth-scroll'                   " animated scrolling
+
+" Editing Plugins
+Plug 'ntpeters/vim-better-whitespace'              " higlight whitespace
+Plug 'jiangmiao/auto-pairs'                        " pair parens/brackets/etc.
+Plug 'vim-scripts/CursorLineCurrentWindow'         " highlight current line
+Plug 'wincent/terminus'                            " cursor indicating mode
+Plug 'terryma/vim-expand-region'                   " region expansion
+Plug 'terryma/vim-multiple-cursors'                " multiple cursors
+
+" Coding
+Plug 'tpope/vim-fugitive'                          " git plugin
+Plug 'tpope/vim-rhubarb'                           " github plugin
+Plug 'junegunn/gv.vim'                             " git commit browser
+Plug 'airblade/vim-gitgutter'                      " git gutter
+Plug 'janko-m/vim-test'                            " run tests
+Plug 'neoclide/coc.nvim', { 'branch': 'release' }  " language-server plugin
+Plug 'thinca/vim-quickrun'                         " quickrun whole/part of file
+Plug 'sbdchd/neoformat'                            " formatter
+
+Plug 'SirVer/ultisnips'                            " snippet engine
+Plug 'honza/vim-snippets'                          " snippets
+
+" Coding (Scala)
+Plug 'derekwyatt/vim-scala'
+
+" Coding (PlantUML)
+Plug 'aklt/plantuml-syntax'                        " plantuml syntax highlighting
+
+call plug#end()
+
+" =============================== Local Settings ===============================
+
+try
+  source ~/.vim/vimrc.local
+catch
+endtry
+
+" ============================= General Settings ===============================
+
+" Set augroup (this ensures that re-sourcing the configuration doesn't
+" duplicate autocmds)
+augroup MyAutoCmd
+  autocmd!
+augroup END
+
+set lazyredraw                           " don't redraw while executing macro
+set shortmess+=c                         " don't give completion messages
+set shortmess+=I                         " don't show the intro
+
+" Always split to the right and below
+set splitright
+set splitbelow
+
+set hidden                               " buffers can exist without a window
+set autowriteall                         " automatically write to files
+set autoread                             " reload files changed outside vim
+set noswapfile                           " no swapfiles
+set nobackup                             " no backups
+set nowb                                 " no write backup
+
+set backspace=indent,eol,start           " allow backspace in insert mode
+
+set history=1000                         " store lots of :cmdline history
+
+" Keep undo history across sessions by storing in a file.
+if has('persistent_undo')
+  silent !mkdir ~/.vim/backups > /dev/null 2>&1
+  set undodir=~/.vim/backups
+  set undofile
+endif
+
+" Save files when focus is lost
+autocmd MyAutoCmd FocusLost * silent! wa " save when focus lost
+autocmd MyAutoCmd VimResized * wincmd =  " resize splits when resizing window
+
+set nowrap                         " do not wrap lines
+set linebreak                      " break lines at good points
+
+" enable wrapping in *.md files
+autocmd MyAutoCmd BufReadPre,FileReadPre *.md :set wrap
+
+" setup vimdiff
+set diffopt=filler,vertical
+
+" disable viminfo -- causes startup and shutdown to take longer
+set viminfo='10,<0,s0,h,/100,:100,@0
+
+" ============================ Theme / Appearance =============================
+
+if has("gui_running")
+  set t_Co=256                     " tell the terminal it has 256 colors
+end
+
+colorscheme codedark               " enable codedark theme
+let g:airline_theme = 'codedark'   " use codedark for airline as well
+set cursorline                     " highlight current line
+
+set title                          " set the title of the terminal
+set guioptions-=T                  " remove toolbar
+set number                         " show line numbers
+set signcolumn=yes                 " always show signcolumns
+set scrolloff=10                   " keep 10 lines around the cursor
+set scrolljump=5                   " scroll by 5 lines
+set showmode                       " show current mode at bottom
+set cmdheight=2                    " more space for messages
+set laststatus=2                   " show the last status
+set visualbell                     " no sounds
+set showcmd                        " show incomplete commands
+
+if has("gui_running")
+  " Show tab number (useful for Cmd-1, Cmd-2.. mapping)
+  autocmd MyAutoCmd VimEnter * set guitablabel=%N:\ %t\ %M
+
+  " Set the font to Monospace
+  set guifont=Monospace\ 10
+endif
+
+" ============================ Syntax Highlighting =============================
+
+syntax on                          " turn on syntax highlighting
+filetype on                        " enable filetype detection
+filetype plugin on                 " filetype specific plugins
+filetype indent on                 " filetype specific indentation
+set synmaxcol=300                  " don't syntax highlight long lines
+
+" Highlight trailing whitespace
+highlight ExtraWhitespace ctermbg=red guibg=red
+match ExtraWhitespace /s\+$/
+
+" ================================= Completion =================================
+
+set completeopt=longest,menuone
+
+set wildmode=list:longest,full
+set wildmenu                       " turn on wildmenu
+set wildignore=*.o,*.obj,*~        " stuff to ignore when tab completing
+set wildignore+=*/target/**
+
+" =================================== Search ===================================
+
+set hlsearch                       " highlight matches
+set incsearch                      " incremental search
+
+" ================================= Nerd Tree ==================================
+" From
+" https://medium.com/@victormours/a-better-nerdtree-setup-3d3921abc0b9
+"
+let NERDTreeShowBookmarks=1
+let NERDTreeQuitOnOpen = 1
+let NERDTreeAutoDeleteBuffer = 1
+let NERDTreeMinimalUI = 1
+let NERDTreeDirArrows = 1
+let NERDTreeIgnore = ['\~$', '\.swp$', '\.git', 'target', '\.idea' ]
+autocmd MyAutoCmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
+" ================================ Indentation =================================
+
+set autoindent
+set smartindent
+set smarttab
+set shiftwidth=2
+set softtabstop=2
+set tabstop=2
+set expandtab
+
+" ============================= Leader Key Mappings ============================
+
+let mapleader = ","            " Set , as the leader key
+
+" <Leader>ac - do code action of current line
+nmap <Leader>ac <Plug>(coc-codeaction)
+" <Leader>d - Show all diagnostics
+nnoremap <silent> <Leader>d  :<C-u>CocList diagnostics<cr>
+" <Leader>e - Edit vimrc
+nnoremap <Leader>e :e! ~/.vim/vimrc<cr>
+" <Leader>g? - Fugitive (Git) shortcuts
+nnoremap <Leader>gb :Gblame<cR>
+nnoremap <Leader>gc :Gcommit<cR>
+nnoremap <Leader>gd :Gdiff<cR>
+nnoremap <Leader>gp :Git push<cR>
+nnoremap <Leader>gr :Gremove<cR>
+nnoremap <Leader>gs :Gstatus<cR>
+nnoremap <Leader>gw :Gwrite<cR>
+" <leader>j - Default action for next item
+nnoremap <silent> <Leader>j  :<C-u>CocNext<CR>
+" <leader>k - Default action for previous item.
+nnoremap <silent> <Leader>k  :<C-u>CocPrev<CR>
+" <Leader>rn - Refactor: rename current word
+nmap <Leader>rn <Plug>(coc-rename)
+" <Leader>n - NerdTree for current file
+nnoremap <silent> <Leader>n :NERDTreeFind<CR> :wincmd p<cr>
+" <Leader>o - Show outline of current document
+nnoremap <silent> <Leader>o  :<C-u>CocList outline<cr>
+" <leader>p - Resume latest coc list.
+nnoremap <silent> <Leader>p  :<C-u>CocListResume<CR>
+" <leader>s - Search workspace symbols
+nnoremap <silent> <Leader>s  :<C-u>CocList -I symbols<cr>
+" <Leader>, - Switch to previous split
+nnoremap <Leader>, <C-w>p
+
+" ======================= Command Line Mode Key Mappings =======================
+
+
+" ========================== Normal Mode Key Mappings ==========================
+
+" a - insert after cursor
+" b - move backward one word
+" c - change into the blackhole register to not clobber last yank
+nnoremap c "_c
+" d - delete. access from register "" or "1-9
+" e - move to end of word
+" f - clever-f
+" g - many functions
+" gd - goto definition
+nmap <silent> gd <Plug>(coc-definition)
+" gi - goto implementation
+nmap <silent> gi <Plug>(coc-implementation)
+" gr - goto references
+nmap <silent> gr <Plug>(coc-references)
+" gy - goto type definition
+nmap <silent> gy <Plug>(coc-type-definition)
+" gp - visually select pasted text
+nnoremap <expr> gp '`[' . strpart(getregtype(), 0, 1) . '`]'
+" h - left
+" i - insert before cursor
+" j - down
+" k - up
+" l - right
+" m - marks
+" n - Next, keep search matches in the middle of the window
+nnoremap n nzzzv
+" o - (open) insert line below cursor
+" p - paste
+nnoremap p gp
+" q - record macros
+" r - replace single character
+" t - till next character
+" u - undo
+" v - visual mode
+" w - move word forward
+" x - delete char
+" y - yank (last yank is stored in register 0). paste with "0p
+" z - many functions
+
+" ' - go to mark
+" , - leader
+" . - repeat last command
+" / - search
+" [ - many functions
+" [c - previous diagnostic
+nmap <silent> [c <Plug>(coc-diagnostic-prev)
+" ] - many functions
+" ]c - next diagnostic
+nmap <silent> ]c <Plug>(coc-diagnsotic-next)
+" \ - toggle comment
+nmap \ <Leader>c<space>
+
+" ====================== Visual Mode Meta/Alt Key Mappings =====================
+
+" j - move visual block down
+vnoremap <c-j> :m '>+1<CR>gv=gv
+" k - move visual block up
+vnoremap <c-k> :m '<-2<CR>gv=gv
+" p - paste in visual mode without replacing default register with deleted
+" text
+xnoremap p "_dP
+" y - yank and go to end of selection
+xnoremap y y`]
+
+" Enter - highlight visual selections
+xnoremap <silent> <CR> y:let @/ = @"<cr>:set hlsearch<cr>
+" Backspace - Delete selected and go into insert mode
+xnoremap <bs> c
+" Space - QuickRun
+xnoremap <Space> :QuickRun<CR>
+" < - Reselect visual block after un-indent
+xnoremap < <gv
+" > - Reselect visual block after indent
+xnoremap > >gv
+" . - repeat the last command on every line
+xnoremap . :normal.<cr>
+" @ - repeat the macro on every line
+xnoremap @ :normal@
+" tab - indent
+xmap <c-i> >
+" shift-tab - unindent
+xmap <s-tab> <
+
+" ======================= Normal Mode Shift Key Mappings =======================
+
+" Shift-Tab - open NERDTree
+nnoremap <silent> <S-Tab> :NERDTreeToggle<CR>
+
+" Shift-a - insert at end of line
+" Shift-b - Move word backward (TODO: replaced by <C-H>, maybe reuse?)
+" Shift-c - deletes rest of line and go to insert mode
+" Shift-d - delete til the end of line
+" Shift-e - move to end of word forward
+" Shift-f - finds backwards
+" Shift-f - reformat
+nnoremap <silent> F :call CocAction('format')<CR>
+" Shift-g - go to end of file
+" Shift-h - go to beginning of line
+noremap H ^
+" Shift-i - insert at beginning of line
+" Shift-j - shrink region
+map J <Plug>(expand_region_shrink)
+" (DISABLED) Shift-k - expand region
+" map K <Plug>(expand_region_expand)
+" Shift-k - show documentation in preview window
+nnoremap <silent> K :call <SID>show_documentation()<CR>
+" Shift-l - go to end of line
+noremap L g_
+" Shift-m - TODO
+" Shift-n - find next occurrence backtards
+nnoremap N Nzzzv
+" Shift-o - insert at line above
+" Shift-p - paste above line
+" Shift-q - Closes the window
+nnoremap Q :q!<cr>
+" Shift-r - reindent entire file
+nnoremap R mgHmwgg=G`wzt`q
+" Shift-s - split and return to normal mode
+nnoremap S i<cr><esc>
+" Shift-t - finds till backwards
+" Shift-u - redo (since u undoes)
+nnoremap U :redo<cr>
+" Shift-v - visual line mode
+" Shift-w - move to start of next word
+" Shift-x - TODO
+" Shift-y - remove join lines to this, Y looks like a join
+noremap Y J
+" Shift-z - TODO
+
+" Shift-[ - beginning of paragraph
+" Shift-] - end of paragraph
+" Shift-' - handles registers
+" Shift-< - indent left
+" Shift-> - indent right
+" Shift-? - search backwards
+" Shift-+ - increment
+nnoremap + <c-a>
+" Shift-- - decrement
+nnoremap - <c-x>
+
+" ======================== Normal Mode Ctrl Key Mappings =======================
+
+" Ctrl-a - All buffers
+nnoremap <c-a> :Buffers<CR>
+" Ctrl-b - go to tag
+nnoremap <c-b> <c-]>
+" Ctrl-c - Commands
+nnoremap <c-c> :Commands<CR>
+" Ctrl-d - scroll half a screen down smoothly
+noremap <silent> <c-d> :call smooth_scroll#down(&scroll, 5, 1)<CR>
+" Ctrl-e - TODO
+" Ctrl-f - Find-files (grep)
+nnoremap <c-f> :Ag
+" Ctrl-g - GitFiles
+nmap <c-g> :GitFiles<CR>
+" Ctrl-h - move word back
+noremap <c-h> B
+" Ctrl-i - Go forward in the jumplist, also realigns screen.
+nnoremap <c-i> <c-i>zzzv
+" Ctrl-j - scroll + move down through the file
+noremap <c-j> 5<c-e>
+" Ctrl-k - scroll + move up through the file
+noremap <c-k> 5<c-y>
+" Ctrl-l - move word forward
+noremap <c-l> W
+" Ctrl-m - same as enter
+" Ctrl-n - next cursor in MultiCursor mode
+" Ctrl-o - Go backward in the jumplist, also realigns screen.
+nnoremap <c-o> <c-o>zzzv
+" Ctrl-p - recent files
+nnoremap <c-p> :History<CR>
+" Ctrl-r - Show command history
+nmap <c-r> :History:<CR>
+" Ctrl-s - Save
+nmap <c-s> :w!<CR>
+" Ctrl-t - go to opposite tag
+nmap <c-t> %
+" Ctrl-u - scroll half a screen up smoothly
+noremap <silent> <c-u> :call smooth_scroll#up(&scroll, 5, 1)<CR>
+" Ctrl-v - paste (works with system clipboard)
+nnoremap <c-v> p
+" Ctrl-q - Visual block mode
+" Ctrl-w - Window management
+" Ctrl-x - cycle through the splits.
+nnoremap <c-x> <c-w>w
+" Ctrl-y - scroll up (TODO Remap?)
+" Ctrl-z - reserved for tmux
+
+" Ctrl-Space: Find files
+nnoremap <NUL> :Files<CR>
+" Ctrl-[ - Esc
+" Ctrl-] - Go forward in the tag stack
+" Ctrl-\ - quick outline
+nmap <silent> <c-\> :BTags<CR>
+" Ctrl-; - vim can't map this
+" Ctrl-' - vim can't map this
+" Ctrl-, - vim can't map this
+" Ctrl-. - vim can't map this
+" Ctrl-/ - vim can't map this
+
+" Ctrl-Tab - next tab
+noremap <C-Tab> :tabnext<CR>
+" Ctrl-Shift-Tab - previous tab
+noremap <C-S-Tab> :tabprev<CR>
+
+" ======================== Insert Mode Ctrl Key Mappings =======================
+
+" Ctrl-a - Go to beginning of line
+inoremap <c-a> <esc>I
+" Ctrl-b - TODO unused
+" Ctrl-c - Inserts line below
+inoremap <c-c> <c-o>o
+" Ctrl-d - Unindent shiftwidth
+" Ctrl-e - Go to end of line
+inoremap <c-e> <esc>A
+" Ctrl-f - move cursor left
+inoremap <c-f> <Left>
+" Ctrl-g - move cursor right
+silent! iunmap <c-g>s
+silent! iunmap <c-g>S
+inoremap <c-g> <Right>
+" Ctrl-h - move word left
+inoremap <c-h> <c-o>B
+" Ctrl-i - Tab
+" Ctrl-j - Move cursor down
+inoremap <expr> <c-j> pumvisible() ? "\<C-e>\<Down>" : "\<Down>"
+" Ctrl-k - Move cursor up
+inoremap <expr> <c-k> pumvisible() ? "\<C-e>\<Up>" : "\<Up>"
+" Ctrl-l - move word right
+inoremap <c-l> <c-o>W
+" Ctrl-m - Same as enter
+" Ctrl-n - Auto complete next.
+" Ctrl-o - Execute one normal mode command
+" Ctrl-p - Auto complete previous (TODO unused?)
+" Ctrl-q - Quoted insert. Useful for doing key binding
+" Ctrl-r - Insert register
+" Ctrl-s - save
+inoremap <c-s> <esc>:w<CR>
+" Ctrl-t - Indent shiftwidth
+" Ctrl-u - Delete till beginning of line, create undo point.
+inoremap <c-u> <c-g>u<c-u>
+" Ctrl-v Paste. For some reason, <c-o> doesn't create undo point.
+inoremap <c-v> <c-g>u<c-o>gP
+" Ctrl-x - TODO unused?
+" Ctrl-w - Delete previous word, create undo point.
+" Ctrl-y - Insert char above cursor (TODO unused?)
+inoremap <c-w> <c-g>u<c-w>
+" Ctrl-z - reserved as command key for tmux
+
+" Ctrl-Space - TODO
+" Ctrl-/ - Undo
+inoremap <c-_> <c-o>u
+
+" ======================== Visual Mode Ctrl Key Mappings =======================
+
+" Ctrl-c - copy
+vnoremap <c-c> y`]
+" Ctrl-f - find highlight word
+vnoremap <c-f> "hy:Ag <c-r>h<cr>
+" Ctrl-n - add virtual cursors on each line
+" Ctrl-r - search and replace
+vnoremap <c-r> "hy:%s/<c-r>h//gc<left><left><left>
+" Ctrl-s - substitute
+vnoremap <c-s> :s/\%V//g<left><left><lefT>
+
+" ====================== Normal Mode Meta/Alt Key Mappings =====================
+
+" Fix alt key keycodes. Using keycodes instead of escape sequence for mapping
+" will use ttimeout instead of timeout, which means pressing escape key will
+" not cause a delay.
+let c='a'
+while c <= 'z'
+  exec "set <A-".c.">=\e".c
+  exec "set <A-".toupper(c).">=\e".toupper(c)
+  let c = nr2char(1 + char2nr(c))
+endw
+
+" Alt-a - select all
+nnoremap <silent> <A-a> :keepjumps normal ggVG<CR>
+" Alt-h - tmux
+" Alt-i - jump forward in the changelist
+nnoremap <A-i> g,
+" Alt-j - move current line down
+nnoremap <silent> <A-j> mz:m+<cr>`z==
+" Alt-shift-J - duplicate line down
+nnoremap <silent> <A-J> mzyyp`zj
+" Alt-k - move current line up
+nnoremap <silent> <A-j> mz:m-<cr>`z==
+" Alt-shift-K - duplicate line up
+nnoremap <silent> <A-K> mzyyp`z
+" Alt-l - tmux
+" Alt-n - start multicursor and directly select all matches
+" Alt-o - jump back in the changelist
+nnoremap <A-o> g;
+" Alt-s - sort and format
+nnoremap <silent> <A-s> :Isort<CR>:Neoformat<CR>
+
+" Cmd-1 - Goto tab 1
+noremap <D-1> :tabn 1<CR>
+" Cmd-2 - Goto tab 2
+noremap <D-2> :tabn 2<CR>
+" Cmd-3 - Goto tab 3
+noremap <D-3> :tabn 3<CR>
+" Cmd-4 - Goto tab 4
+noremap <D-4> :tabn 4<CR>
+" Cmd-5 - Goto tab 5
+noremap <D-5> :tabn 5<CR>
+" Cmd-6 - Goto tab 6
+noremap <D-6> :tabn 6<CR>
+" Cmd-7 - Goto tab 7
+noremap <D-7> :tabn 7<CR>
+" Cmd-8 - Goto tab 8
+noremap <D-8> :tabn 8<CR>
+" Cmd-9 - Goto tab 9
+noremap <D-9> :tabn 9<CR>
+" Cmd-0 - Goto last tab
+noremap <D-0> :tablast<CR>
+
+" ====================== Insert Mode Meta/Alt Key Mappings =====================
+
+" ====================== Visual Mode Meta/Alt Key Mappings =====================
+
+" Alt-j - move selections down
+vnoremap <A-j> :m'>+<cr>`my`>mzgv`yo`z
+" Alt-k - move selections up
+vnoremap <A-k> :m'<-2<cr>`>my`<mzgv`yo`z
+
+" ============================= Space Key Mappings =============================
+
+" ==================================== Tabs ====================================
+
+if has("gui_running")
+  " Show tab number (useful for Cmd-1, Cmd-2.. mapping)
+  autocmd MyAutoCmd VimEnter * set guitablabel=%N:\ %t\ %M
+
+  noremap <C-Tab> :tabnext<CR>
+  noremap <C-S-Tab> :tabprev<CR>
+
+end
+
+" ============================ COC (language server) ===========================
+
+" Function used for showing documentation
+function! s:show_documentation()
+  if &filetype == 'vim'
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
+
+" Highlight symbol under cursor on CursorHold
+autocmd MyAutoCmd CursorHold * silent call CocActionAsync('highlight')
+
+" ================================ Expand Region ===============================
+
+let g:expand_region_use_select_mode = 0
+
+" ==================================== VIMRC ===================================
+
+" Don't pair quotes (comments) in vimrc files
+autocmd MyAutoCmd Filetype vim let b:AutoPairs = {'(':')', "'": "'", '`':'`'}
+
+" ==================================== Scala ===================================
+
+" Most configuration is built-in to metals
+
+" Treat SBT files as scala
+autocmd MyAutoCmd BufRead,BufNewFile *.sbt set filetype=scala
+
+" ================================== Snippets ==================================
+
+let g:UltiSnipsExpandTrigger="**"
+let g:UltiSnipsJumpForwardTrigger="<c-b>"
+let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+let g:UltiSnipsEditSplit="vertical"
+
+" ================================== Neoformat =================================
+
+" ================================== Autopairs =================================
+let g:AutoPairsMapCh = 0                         " don't map <c-h>
